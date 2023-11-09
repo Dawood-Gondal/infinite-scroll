@@ -1,0 +1,73 @@
+<?php
+/**
+ * @category    M2Commerce Enterprise
+ * @package     M2Commerce_InfiniteScroll
+ * @copyright   Copyright (c) 2023 M2Commerce Enterprise
+ * @author      dawoodgondaldev@gmail.com
+ */
+
+/** @var M2Commerce\InfiniteScroll\Block\Scroll $block */
+
+$isEnabled      = $block->getConfigModule('general/enabled');
+$delay          = $block->getConfigModule('general/delay');
+$content        = $block->getConfigModule('general/content');
+$pagination     = $block->getConfigModule('general/pagination');
+$next           = $block->getConfigModule('general/next');
+$item           = $block->getConfigModule('general/item');
+$loadingText    = $block->getConfigModule('general/loading_text');
+$doneText       = $block->getConfigModule('general/done_text');
+$loadMore       = $block->getConfigModule('general/load_more');
+$loadMoreText   = $block->getConfigModule('general/load_more_text');
+$loadingImage   = $block->getConfigModule('general/loading_image');
+$imgPath        = 'm2commerce/ajaxScroll/'.$loadingImage;
+
+if ($loadingImage) {
+    $loadingImage = $block->getMedia($imgPath);
+} else {
+    $loadingImage = $this->getViewFileUrl('images/loader-1.gif');
+}
+?>
+<script type="text/javascript">
+    require([
+        'jquery',
+        'infiniteAjaxScroll'
+        // 'catalogAddToCart'
+    ], function ($) {
+        "use strict";
+
+        $(document).ready(function () {
+            $('body').addClass('infinitescroll');
+
+            window.ias = $.ias({
+                container: "<?php echo $content;?>",
+                item: "<?php echo $item;?>",
+                pagination: "<?php echo $pagination;?>",
+                next: "<?php echo $next;?>",
+                delay: "<?php echo $delay;?>",
+            });
+
+            window.ias.extension(new IASSpinnerExtension({
+                src: "<?php echo $loadingImage; ?>",
+                html: '<div class="iass-spinner"><img src="{src}" alt="<?php echo $loadingText; ?>"/></div>'
+            }));
+
+            window.ias.extension(new IASNoneLeftExtension({
+                text: "<?php echo $doneText;?>",
+                html: '<div class="ias-noneleft">{text}</div>'
+            }));
+
+            window.ias.extension(new IASTriggerExtension({
+                text:"<?php echo $loadMoreText ?>",
+                html:'<div class="ias-trigger ias-trigger-next"><button class="load-more"><?php echo $loadMoreText ?></button></div>',
+                textPrev:"<?php echo $loadMoreText ?>",
+                htmlPrev:'<div class="ias-trigger ias-trigger-prev"><button class="load-more"><?php echo $loadMoreText ?></button></div>',
+                offset:"<?php echo $loadMore ?>",
+            }));
+
+            window.ias.on('rendered', function(items){
+                $('body').trigger('contentUpdated');
+                $( "form[data-role='tocart-form']" ).catalogAddToCart();
+            });
+        });
+    });
+</script>
